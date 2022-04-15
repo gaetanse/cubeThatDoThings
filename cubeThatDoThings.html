@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>cubeThatDoThings</title>
+        <style>
+            .info, .customMyCube {
+                border          : 1px solid white;
+                align-items     : center;
+                justify-content : center;
+            }
+
+            .customMyCubeEdit {
+                padding-top    : 25px;
+                padding-bottom : 25px;
+            }
+
+            .reste {
+                height : 100%;
+                margin : 50px 50px;
+            }
+
+            html, body {
+                text-align       : center;
+                background-color : grey;
+                color            : white;
+                font-size        : 25px;
+                height           : 80%;
+            }
+        </style>
+    </head>
+    <body>
+        <section class="customMyCube">&nbsp;</section>
+        <section class="info">&nbsp;</section>
+        <section class="reste">&nbsp;</section>
+        <script>
+            let random = n => Math.floor((n + 1) * Math.random()); // function random(n) that return formula with n
+
+            function addDiv(balise, className, text, toInject) { // add balise with class and text
+                const BALISE = document.createElement(balise);
+                BALISE.innerText = text;
+                BALISE.className = className;
+                toInject.appendChild(BALISE);
+            }
+
+            function putDefaultColorInfo() { // initialisation color bg in class info
+                document.getElementsByClassName('info')[0].style.backgroundColor =
+                    'rgba(' + cubeColorR + ',' +
+                    cubeColorG + ',' +
+                    cubeColorB + ', ' + cubeColorA + ')';
+            }
+
+            function modifBgColor(element) { //modif du bgColor de element
+                for (let x = 0; x < 6; ++x) {
+                    element[x].style.backgroundColor =
+                        'rgba(' + cubeColorR + ',' +
+                        cubeColorG + ',' +
+                        cubeColorB + ', ' + cubeColorA + ')';
+                    putDefaultColorInfo();
+                }
+            }
+
+            function moveCube() {
+                for (let i = 0; i < allCubes.length - SIZECAT; ++i)
+                    if (i !== 0) {
+                        MOVELEFT[i] += SPEED[i];
+                        SENS[i] ? allCubes[i].style.left = MOVELEFT[i] + 'px' : allCubes[i].style.top = MOVELEFT[i] + 'px';
+                        if (allCubes[i].style.top.slice(0, -2) > window.innerHeight || allCubes[i].style.top.slice(0, -2) < 0 || allCubes[i].style.left.slice(0, -2) > window.innerWidth || allCubes[i].style.left.slice(0, -2) < 0)
+                            SPEED[i] *= -1;
+                        //todo: detect if bug alors tp au centre window
+                    }
+            }
+
+            //todo: function fleché ?
+            function allFacesChangeTransform(arClassName, arTransform) { //change all transform from faces
+                for (let j = 0; j < arClassName.length; j++) document.getElementsByClassName(arClassName[j])[0].style.transform = arTransform[j];
+            }
+
+            function fillArray(AR) { // fill all arrays with random between 0 and 255
+                for (let i = 0; i < AR.length; i++) for (let j = 0; j < NB_DE_DIV; j++) AR[i].push(random(255));
+            }
+
+            const NB_DE_DIV = 20;
+            //todo: est ce que tous ca est utile ?
+            const ROTATESSPEED = Array.from({length: NB_DE_DIV}, () => ((Math.random() + 0.1) * 10).toPrecision(3));
+            let BACKGROUNDCOLOR1 = [];
+            let BACKGROUNDCOLOR2 = [];
+            let BACKGROUNDCOLOR3 = [];
+            fillArray([BACKGROUNDCOLOR1, BACKGROUNDCOLOR2, BACKGROUNDCOLOR3]);
+            const MOVELEFT = Array(NB_DE_DIV).fill(0);
+            const SPEED = Array.from({length: NB_DE_DIV}, () => (Math.random() + 0.1) * 15);
+            const OPACITYS = Array.from({length: NB_DE_DIV}, () => Math.random() + 0.1);
+            const SENS = Array(NB_DE_DIV).fill(undefined, undefined, undefined).map((e, i) => (i % 2 === 0));
+            let cubeColorR = 0;let cubeColorG = 0;let cubeColorB = 0;let cubeColorA = 1;
+            let SIZE = 0;
+            let SIZECAT = 0;
+            //todo: resize window deplacer les events
+            BACKGROUNDCOLOR1[0] = 0; BACKGROUNDCOLOR2[0] = 0; BACKGROUNDCOLOR3[0] = 0;
+            OPACITYS[0] = 1;
+            putDefaultColorInfo();
+
+            document.getElementsByClassName('info')[0].innerHTML =
+                'id : ' + 0 + ' / size : 0 / RS : ' + ROTATESSPEED[0] +
+                '<section class="customMyCubeEdit">' +
+                '   color<input type="range" id="r" name="r" min="0" max="255" value="' + cubeColorR + '" step="1">r' +
+                '   <input type="range" id="g" name="g" min="0" max="255" value="' + cubeColorG + '" step="1">g' +
+                '   <input type="range" id="b" name="b" min="0" max="255" value="' + cubeColorB + '" step="1">b' +
+                '   <input type="range" id="a" name="a" min="0" max="1.0" value="' + cubeColorA + '" step="0.01">a' +
+                '</section>';
+
+            for (let i = 0; i < NB_DE_DIV; ++i) {
+
+                // KEYFRAME
+                let cueAnimation = document.createElement('style');
+                let rules = document.createTextNode('' +
+                    '@keyframes turn' + i + '{' +
+                    '   from{transform:rotate3d(0, 0, 0, 0);}' +
+                    '   to{transform:rotate3d(' + Math.random() + ', ' + Math.random() + ', ' + Math.random() + ', 360deg);}' +
+                    '};'
+                );
+                cueAnimation.appendChild(rules);
+                document.body.appendChild(cueAnimation);
+
+                SIZE = ((Math.random() + 0.5) * 65).toPrecision(4);
+
+                //CUBE
+                const CUBE = document.createElement('div');
+                CUBE.className = 'cube';
+                CUBE.setAttribute(
+                    'style',
+                    'position:fixed;' +
+                    'width:' + SIZE + 'px;' +
+                    'height:' + SIZE + 'px;' +
+                    'transform-style:preserve-3d;' +
+                    'animation:turn' + i + ' ' + ROTATESSPEED[i] + 's linear infinite;'
+                );
+
+                //FACES
+                [' top', ' bottom', ' left', ' right', ' front', ' back'].forEach((element) => addDiv('div', 'face' + i + element + i, i, CUBE));
+
+                document.body.appendChild(CUBE);
+
+                const FACES = document.getElementsByClassName('face' + i);
+
+                for (let x = 0; x < 6; ++x) {
+                    FACES[x].setAttribute(
+                        'style',
+                        'width:' + SIZE + 'px;' +
+                        'height:' + SIZE + 'px;' +
+                        'box-shadow: 0 0 5px rgba(255,255,255,.9);' +
+                        'background-color:rgba(' +
+                        BACKGROUNDCOLOR1[i] + ',' +
+                        BACKGROUNDCOLOR2[i] + ',' +
+                        BACKGROUNDCOLOR3[i] + ', ' + OPACITYS[i] + ');' +
+                        'border:1px solid black;' +
+                        'position:absolute;' +
+                        'display:flex;' +
+                        'align-items:center;' +
+                        'justify-content:center;' +
+                        'font-size:' + SIZE / 1.5 + 'px;'
+                    );
+                    allFacesChangeTransform(
+                        ['top' + i, 'bottom' + i, 'left' + i, 'right' + i, 'front' + i, 'back' + i]
+                        , ['translatey(' + -SIZE / 2 + 'px) rotateX(90deg)', 'translateY(' + SIZE / 2 + 'px) rotateX(-90deg)', 'translateX(' + -SIZE / 2 + 'px) rotateY(-90deg)', 'translateX(' + SIZE / 2 + 'px) rotateY(90deg)', 'translateZ(' + SIZE / 2 + 'px)', 'translateZ(' + -SIZE / 2 + 'px) rotateY(180deg)']);
+                }
+            }
+
+            // const DATA = [
+            //     [250,250,25,'#7e6b6b',0],
+            //     [350,300,50,'red',0],
+            //     [300,300,50,'red',0],
+            //     [250,250,5,'black',0],
+            //     [250,250,5,'black',0],
+            //     [250,250,5,'black',0],
+            //     [250,250,5,'black',0]
+            // ];
+            const DATA = [];
+            SIZECAT = DATA.length;
+            const BACKGROUNDCOLORCAT = [];
+
+            const CAT_ROTATESPEED = ((Math.random() + 0.1) * 10).toPrecision(3);
+            const CAT_SPEED = ((Math.random() + 0.1) * 15);
+            const CAT_OPACITYS = (Math.random() + 0.1);
+            const CAT_SENS = false;
+
+            const CAT_TRANSLATE = [];
+
+            DATA.forEach((e) => {
+                ROTATESSPEED.push(CAT_ROTATESPEED);
+                BACKGROUNDCOLORCAT.push(e[3]);
+                MOVELEFT.push(0);
+                SPEED.push(CAT_SPEED);
+                OPACITYS.push(CAT_OPACITYS);
+                SENS.push(CAT_SENS);
+                CAT_TRANSLATE.push(e[4])
+            });
+
+            const rotate_x = Math.random();
+            const rotate_y = Math.random();
+            const rotate_z = Math.random();
+
+            DATA.forEach((e, index) => {
+                console.log(NB_DE_DIV + index);
+                let cueAnimation = document.createElement('style');
+                let rules = document.createTextNode('' +
+                    '@keyframes turn' + NB_DE_DIV + index + '{' +
+                    '   from{transform:rotate3d(0, 0, 0, 0);}' +
+                    '   to{transform:rotate3d(' + rotate_x + ', ' + rotate_y + ', ' + rotate_z + ', 360deg);}' +
+                    '};'
+                );
+                cueAnimation.appendChild(rules);
+                document.body.appendChild(cueAnimation);
+                //CUBE
+                const CUBE = document.createElement('div');
+                CUBE.className = 'cube';
+                CUBE.setAttribute(
+                    'style',
+                    'position:fixed;' +
+                    'z-index:' + index + ';' +
+                    'width:' + e[2] + 'px;' +
+                    'height:' + e[2] + 'px;' +
+                    'transform: translateZ(' + CAT_TRANSLATE[index] + 'px);' +
+                    'left:' + e[0] + 'px;' +
+                    'top:' + e[1] + 'px;' +
+                    'transform-style:preserve-3d;'
+                );
+                //'animation:turn' + NB_DE_DIV+index + ' ' + CAT_ROTATESPEED + 's linear infinite;'
+                //FACES
+                [' top', ' bottom', ' left', ' right', ' front', ' back'].forEach((element) => addDiv('div', 'face' + NB_DE_DIV + index + element + NB_DE_DIV + index, '', CUBE));
+
+                document.body.appendChild(CUBE);
+                const FACES = document.getElementsByClassName('face' + NB_DE_DIV + index);
+
+                for (let x = 0; x < 6; ++x) {
+                    FACES[x].setAttribute(
+                        'style',
+                        'width:' + e[2] + 'px;' +
+                        'height:' + e[2] + 'px;' +
+                        'background-color:' + BACKGROUNDCOLORCAT[index] + ';' +
+                        'position:absolute;' +
+                        'display:flex;' +
+                        'align-items:center;' +
+                        'justify-content:center;'
+                    );
+                    allFacesChangeTransform(
+                        ['top' + NB_DE_DIV + index, 'bottom' + NB_DE_DIV + index, 'left' + NB_DE_DIV + index, 'right' + NB_DE_DIV + index, 'front' + NB_DE_DIV + index, 'back' + NB_DE_DIV + index]
+                        , ['translatey(' + -e[2] / 2 + 'px) rotateX(90deg)', 'translateY(' + e[2] / 2 + 'px) rotateX(-90deg)', 'translateX(' + -e[2] / 2 + 'px) rotateY(-90deg)', 'translateX(' + e[2] / 2 + 'px) rotateY(90deg)', 'translateZ(' + e[2] / 2 + 'px)', 'translateZ(' + -e[2] / 2 + 'px) rotateY(180deg)']);
+                }
+            });
+
+            const allCubes = [];
+
+            for (let element of document.getElementsByTagName('div')) if (element.className === 'cube') allCubes.push((element));
+            for (let i = 0; i < allCubes.length - SIZECAT; ++i) {
+                SENS[i] ? allCubes[i].style.top = Math.random() * window.innerHeight + 'px' : allCubes[i].style.left = Math.random() * window.innerWidth + 'px';
+                allCubes[i].addEventListener('mouseover', function () {
+                    let customMyCube = document.getElementsByClassName('customMyCube');
+                    customMyCube[0].style.backgroundColor = 'rgb(' +
+                        BACKGROUNDCOLOR1[i] + ',' +
+                        BACKGROUNDCOLOR2[i] + ',' +
+                        BACKGROUNDCOLOR3[i] + ', ' + OPACITYS[i] + ')';
+                    customMyCube[0].innerHTML = 'id : ' + i +
+                        ' / size : ' + allCubes[i].style.width +
+                        ' / RS : ' + ROTATESSPEED[i];
+                });
+                if (i === 0) {
+
+                    //todo: cube bon deplacement largeur et hauteur
+                    //todo: tous les elements sauf customMyCubeEdit customMyCube info
+                    document.getElementsByClassName('reste')[0].addEventListener('mousemove', function (e) {
+                        const XMOUSEPOS = e.clientX + window.scrollX;
+                        const YMOUSEPOS = e.clientY + window.scrollY;
+                        allCubes[0].style.left = XMOUSEPOS - (SIZE / 2) + 'px';
+                        allCubes[0].style.top = YMOUSEPOS - (SIZE / 2) + 'px';
+
+                        document.getElementsByClassName('info')[0].innerHTML =
+                            'id : ' + i + ' / size : ' + allCubes[0].style.width + ' / RS : ' + ROTATESSPEED[i] +
+                            '<section class="customMyCubeEdit">' +
+                            '   color<input type="range" id="r" name="r" min="0" max="255" value="' + cubeColorR + '" step="1">r' +
+                            '   <input type="range" id="g" name="g" min="0" max="255" value="' + cubeColorG + '" step="1">g' +
+                            '   <input type="range" id="b" name="b" min="0" max="255" value="' + cubeColorB + '" step="1">b' +
+                            '   <input type="range" id="a" name="a" min="0" max="1.0" value="' + cubeColorA + '" step="0.01">a' +
+                            '</section>';
+
+                        //todo : améliorer la fonction
+                        const FACES = document.getElementsByClassName('face0');
+
+                        const INPUT_R = document.getElementById('r');
+                        INPUT_R.addEventListener('input', function () {
+                            cubeColorR = parseInt(INPUT_R.value);
+                            modifBgColor(FACES);
+                        });
+                        const INPUT_G = document.getElementById('g');
+                        INPUT_G.addEventListener('input', function () {
+                            cubeColorG = parseInt(INPUT_G.value);
+                            modifBgColor(FACES);
+                        });
+                        const INPUT_B = document.getElementById('b');
+                        INPUT_B.addEventListener('input', function () {
+                            cubeColorB = parseInt(INPUT_B.value);
+                            modifBgColor(FACES);
+                        });
+                        const INPUT_A = document.getElementById('a');
+                        INPUT_A.addEventListener('input', function () {
+                            cubeColorA = parseInt(INPUT_A.value);
+                            modifBgColor(FACES);
+                        });
+
+                    });
+                }
+            }
+            setInterval(moveCube, 50);
+
+        </script>
+    </body>
+</html>
